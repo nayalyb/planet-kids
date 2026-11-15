@@ -1,0 +1,17 @@
+{
+  "name": "플래닛 키즈 - 나의 행성 키우기",
+  "short_name": "플래닛 키즈",
+  "description": "미션으로 키우는 나의 행성 - 어린이 습관 성장 게임",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060a1f",
+  "theme_color": "#060a1f",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
