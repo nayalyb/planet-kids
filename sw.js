@@ -1,5 +1,5 @@
 /* 플래닛 키즈 - 오프라인 지원 서비스 워커 (온라인이면 최신 버전, 오프라인이면 저장본) */
-const CACHE = 'planet-kids-20261115224234';
+const CACHE = 'planet-kids-20261118134311';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

@@ -34,8 +34,11 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font);
-  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none;
+  /* 한글은 기본적으로 글자 사이 아무 데서나 줄이 바뀌어요("쿠폰함에 넣/기") → 띄어쓰기에서만 줄바꿈, 아주 긴 글자만 예외로 끊기 */
+  word-break: keep-all; overflow-wrap: break-word; }
 input, textarea, select { -webkit-user-select: text; user-select: text; font-family: var(--font); }
+textarea { word-break: break-all; }
 button { font-family: var(--font); color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 button:disabled { opacity: .45; cursor: default; }
 #scene { position: fixed; inset: 0; touch-action: none; z-index: 0; }
@@ -199,8 +202,9 @@ body.sheet-open #timeChip, body.sheet-open #surpriseBanner { opacity: 0; pointer
 #timeChip, #surpriseBanner, #balance, #homeSide { transition: opacity .3s; }
 
 /* ---------- 공용 카드/버튼 ---------- */
-.section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 4px 10px; font-size: 16px; font-weight: 900; }
-.section-title small { font-size: 12px; color: var(--sub); font-weight: 600; }
+.section-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin: 18px 4px 10px; font-size: 16px; font-weight: 900; white-space: nowrap; }
+/* 제목은 한 줄로, 옆 설명이 길면 설명만 줄을 바꿔요 */
+.section-title small { font-size: 12px; color: var(--sub); font-weight: 600; white-space: normal; flex: 1 1 200px; text-align: right; min-width: 0; }
 .card { background: var(--panel2); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; margin-bottom: 10px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 20px; border-radius: 16px; font-weight: 800; font-size: 16px;
   background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 6px 18px rgba(90,80,255,.35); transition: transform .12s, filter .2s; }
@@ -358,7 +362,8 @@ body.sheet-open #timeChip, body.sheet-open #surpriseBanner { opacity: 0; pointer
 @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes spinIn { from { transform: scale(.2) rotate(-90deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .modal .actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
-.modal .actions .btn { flex: 1; min-width: 120px; }
+/* 버튼 글자는 한 줄: 자리가 모자라면 글자 대신 버튼이 통째로 다음 줄로 내려가요 */
+.modal .actions .btn { flex: 1 1 0; min-width: max-content; white-space: nowrap; }
 .levelup-title { font-size: 40px !important; background: linear-gradient(90deg, #ffd54f, #ff8a65, #ff5fa2, #7c5cff); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 1px; }
 .reward-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
 .reward-row span { padding: 6px 12px; border-radius: 12px; background: rgba(255,255,255,.1); font-weight: 800; }
@@ -482,6 +487,73 @@ body.sheet-open #timeChip, body.sheet-open #surpriseBanner { opacity: 0; pointer
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
+/* ---------- 켜기/끄기 스위치: 한눈에 보이게 ---------- */
+.switch { padding: 12px 14px; margin: 10px 0 0; border-radius: 16px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.14);
+  color: #dfe3ff; font-size: 14.5px; line-height: 1.4; cursor: pointer; transition: background .2s, border-color .2s; }
+.form label.switch { display: flex; color: #dfe3ff; font-size: 14.5px; margin: 10px 0 0; }
+.switch i { width: 64px; height: 34px; border-radius: 17px; background: #2a2f5a; border: 2px solid rgba(255,255,255,.35); box-shadow: inset 0 2px 5px rgba(0,0,0,.45); }
+.switch i::before { content: 'OFF'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 900; letter-spacing: .5px; color: rgba(255,255,255,.55); font-style: normal; transition: opacity .2s; }
+.switch i::after { top: 3px; left: 3px; width: 24px; height: 24px; background: #b8bdd9; box-shadow: 0 2px 5px rgba(0,0,0,.4); }
+.switch input:checked + i { background: linear-gradient(135deg, #2ecf8a, #3ddc97); border-color: #7cf0bf; box-shadow: 0 0 12px rgba(61,220,151,.55), inset 0 1px 3px rgba(0,0,0,.2); }
+.switch input:checked + i::before { content: 'ON'; right: auto; left: 9px; color: #053d24; }
+.switch input:checked + i::after { transform: translateX(30px); background: #fff; }
+.switch:has(input:checked) { background: rgba(61,220,151,.12); border-color: rgba(61,220,151,.55); color: #fff; }
+/* 목록 줄 안의 작은 켜기/끄기는 카드 없이 스위치만 */
+.pitem .switch, .pitem .switch:has(input:checked) { padding: 0; margin: 0; background: none; border: 0; }
+
+/* ---------- 부모님 모드: 길게 눌러 순서 바꾸기 ---------- */
+[data-sid] { touch-action: pan-y; }
+.drag-handle { flex: none; width: 26px; text-align: center; font-size: 18px; color: rgba(255,255,255,.35); cursor: grab; letter-spacing: -2px; }
+.sorting [data-sid] { transition: transform .18s ease; }
+.sorting [data-sid].lifted { transition: none; z-index: 20; position: relative; transform-origin: center; box-shadow: 0 16px 34px rgba(0,0,0,.55), 0 0 0 2px var(--gold); background: #262c6e; }
+.press-hint { animation: pressHint .45s ease-out forwards; }
+@keyframes pressHint { to { box-shadow: 0 0 0 2px rgba(255,213,79,.8); transform: scale(.985); } }
+.sort-tip { font-size: 12px; color: var(--sub); margin: -4px 4px 8px; }
+
+/* ---------- 상점 미리보기 · 프로필 캐릭터 ---------- */
+[data-sid] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+[data-sid] input { -webkit-user-select: text; user-select: text; }
+.price-wrap { display: flex; align-items: center; gap: 4px; flex: none; font-size: 15px; }
+.pv-av { overflow: visible; background: none; }
+.pv-av .avatar { width: 44px; height: 44px; font-size: 26px; }
+.pv-big { height: 180px; border-radius: 18px; position: relative; overflow: hidden; margin: 4px 0 12px; border: 1px solid rgba(255,255,255,.2);
+  background-blend-mode: normal; }
+.pv-big::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 18% 28%, #fff, transparent), radial-gradient(1px 1px at 72% 18%, #fff, transparent),
+  radial-gradient(1.5px 1.5px at 42% 82%, #fff, transparent), radial-gradient(1px 1px at 86% 66%, #fff, transparent), radial-gradient(1px 1px at 9% 76%, #fff, transparent), radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,.7), transparent); }
+.pv-planet { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe3b3, #d9894a 55%, #5a2a14); box-shadow: 0 0 30px rgba(255,200,120,.35); }
+.pv-avbig { width: 112px !important; height: 112px !important; font-size: 66px !important; }
+.pv { flex: none; width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 28px; position: relative; background: rgba(255,255,255,.07); overflow: hidden; cursor: zoom-in; }
+.pv.theme { border: 1px solid rgba(255,255,255,.25); }
+.pv.theme::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; right: 9px; top: 9px; background: radial-gradient(circle at 35% 30%, #fff, #9ab 60%, #345); box-shadow: 0 0 8px rgba(255,255,255,.5); }
+.price-in { width: 92px !important; flex: none; padding: 8px 10px !important; text-align: right; font-weight: 800; font-size: 16px; color: #fff !important;
+  background: rgba(255,255,255,.08) !important; border: 1.5px solid rgba(255,213,79,.45) !important; border-radius: 12px; }
+.price-in:focus { outline: none; border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(255,213,79,.25); }
+.av { position: relative; display: inline-grid; place-items: center; border-radius: 50%; }
+.av[data-frame="silver"] { box-shadow: 0 0 0 3px #d8dee9, 0 0 10px rgba(216,222,233,.6); }
+.av[data-frame="gold"] { box-shadow: 0 0 0 3px #ffd54f, 0 0 14px rgba(255,213,79,.75); }
+.av[data-frame="neon"] { box-shadow: 0 0 0 3px #36c2ff, 0 0 16px #36c2ff, 0 0 26px rgba(124,92,255,.7); }
+.av[data-frame="rainbow"]::before, .av[data-frame="cosmic"]::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; padding: 3px; pointer-events: none;
+  background: conic-gradient(#ff6b6b, #ffd54f, #3ddc97, #36c2ff, #7c5cff, #ff6b6b); animation: orbSpin 4s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.av[data-frame="rainbow"] { box-shadow: 0 0 14px rgba(255,143,171,.6); }
+.av[data-frame="cosmic"]::before { background: conic-gradient(#ffffff, #ffd54f, #ff8fab, #b983ff, #36c2ff, #ffffff); }
+.av[data-frame="cosmic"] { box-shadow: 0 0 18px rgba(255,255,255,.7), 0 0 30px rgba(185,131,255,.6); }
+.av[data-frame="cosmic"]::after { content: '\2726'; position: absolute; top: -10px; right: -8px; font-size: 14px; color: #fff6c0; text-shadow: 0 0 8px #ffd54f; pointer-events: none; }
+.shop-av { width: 60px; height: 60px; font-size: 34px; margin: 4px auto 2px; }
+.emoji-grid .av { width: 34px; height: 34px; font-size: 22px; }
+.rarity { display: inline-block; font-size: 11px; font-weight: 900; padding: 1px 7px; border-radius: 8px; margin-top: 2px; }
+.rarity.r1 { background: rgba(255,255,255,.12); color: #cfd5f3; }
+.rarity.r2 { background: rgba(54,194,255,.2); color: #8fdcff; }
+.rarity.r3 { background: rgba(185,131,255,.25); color: #d9bfff; }
+.rarity.r4 { background: rgba(255,213,79,.25); color: #ffe38a; }
+.rarity.r5 { background: linear-gradient(90deg, rgba(255,107,107,.35), rgba(255,213,79,.35), rgba(54,194,255,.35)); color: #fff; }
+
+/* ---------- 줄바꿈 다듬기 ---------- */
+.btn, .opt, .tag, .rarity, .fchip, .price-wrap { white-space: nowrap; }
+/* 카드 제목이 두 줄이 될 때 위아래 길이를 비슷하게 (한 글자만 아래로 떨어지지 않게) */
+.item b, .ach b, .combo b, .jp, .pitem .info b, .modal h2, .modal p, .mtitle, .section-title small, .item .muted { text-wrap: balance; }.chips.wrap { flex-wrap: wrap; overflow: visible; }
+
 </style>
 </head>
 <body>
@@ -543,7 +615,7 @@ body.sheet-open #timeChip, body.sheet-open #surpriseBanner { opacity: 0; pointer
 /* 플래닛 키즈 - 게임 데이터 (행성, 분야, 기본 미션, 별자리, 업적 등) */
 window.PQ = window.PQ || {};
 
-PQ.VERSION = '1.0.0';
+PQ.VERSION = '1.1.2';
 PQ.STORAGE_KEY = 'planetKids.v1';
 
 /* ---------- 미션 분야 & 발전 트랙 ---------- */
@@ -806,9 +878,34 @@ PQ.COSMETICS = [
   { id: 'fx_snow', type: 'fx', name: '우주 눈송이', icon: '❄️', cost: 120 },
   { id: 'fx_aura', type: 'fx', name: '황금 오라', icon: '🔆', cost: 200 },
   { id: 'fx_comet', type: 'fx', name: '나만의 혜성', icon: '💫', cost: 220 },
-  { id: 'fx_fireworks', type: 'fx', name: '불꽃놀이', icon: '🎆', cost: 250 }
+  { id: 'fx_fireworks', type: 'fx', name: '불꽃놀이', icon: '🎆', cost: 250 },
+  /* 프로필 캐릭터: 희귀할수록(테두리가 화려할수록) 비싸요 — r 희귀도 1 일반 · 2 레어(은테) · 3 에픽(금테) · 4 전설(네온) · 5 신화(무지개·우주 테두리) */
+  { id: 'av_koala', type: 'avatar', name: '졸린 코알라', icon: '🐨', cost: 40, r: 1 },
+  { id: 'av_hamster', type: 'avatar', name: '볼빵빵 햄스터', icon: '🐹', cost: 40, r: 1 },
+  { id: 'av_chick', type: 'avatar', name: '삐약 병아리', icon: '🐥', cost: 45, r: 1 },
+  { id: 'av_frog', type: 'avatar', name: '개굴 개구리', icon: '🐸', cost: 45, r: 1 },
+  { id: 'av_octopus', type: 'avatar', name: '문어 박사', icon: '🐙', cost: 55, r: 1 },
+  { id: 'av_alien', type: 'avatar', name: '외계인 친구', icon: '👽', cost: 85, r: 2, frame: 'silver' },
+  { id: 'av_robot', type: 'avatar', name: '로봇 탐사대', icon: '🤖', cost: 90, r: 2, frame: 'silver' },
+  { id: 'av_dolphin', type: 'avatar', name: '우주 돌고래', icon: '🐬', cost: 95, r: 2, frame: 'silver' },
+  { id: 'av_owl', type: 'avatar', name: '별빛 부엉이', icon: '🦉', cost: 100, r: 2, frame: 'silver' },
+  { id: 'av_dino', type: 'avatar', name: '꼬마 공룡', icon: '🦖', cost: 110, r: 2, frame: 'silver' },
+  { id: 'av_fairy', type: 'avatar', name: '반짝 요정', icon: '🧚‍♀️', cost: 160, r: 3, frame: 'gold' },
+  { id: 'av_mermaid', type: 'avatar', name: '은하 인어', icon: '🧜‍♀️', cost: 170, r: 3, frame: 'gold' },
+  { id: 'av_wizard', type: 'avatar', name: '꼬마 마법사', icon: '🧙‍♀️', cost: 180, r: 3, frame: 'gold' },
+  { id: 'av_hero', type: 'avatar', name: '우주 히어로', icon: '🦸‍♀️', cost: 200, r: 3, frame: 'gold' },
+  { id: 'av_elf', type: 'avatar', name: '달빛 엘프', icon: '🧝‍♀️', cost: 280, r: 4, frame: 'neon' },
+  { id: 'av_butterfly', type: 'avatar', name: '오로라 나비', icon: '🦋', cost: 300, r: 4, frame: 'neon' },
+  { id: 'av_dragon', type: 'avatar', name: '은하 드래곤', icon: '🐲', cost: 340, r: 4, frame: 'neon' },
+  { id: 'av_princess', type: 'avatar', name: '별나라 공주', icon: '👸', cost: 380, r: 4, frame: 'neon' },
+  { id: 'av_star', type: 'avatar', name: '별의 아이', icon: '🌟', cost: 550, r: 5, frame: 'rainbow' },
+  { id: 'av_planet', type: 'avatar', name: '행성 수호자', icon: '🪐', cost: 650, r: 5, frame: 'rainbow' },
+  { id: 'av_queen', type: 'avatar', name: '우주의 여왕', icon: '👑', cost: 800, r: 5, frame: 'cosmic' }
 ];
-PQ.COSMETIC_TYPES = [['theme', '🌌 배경 테마'], ['pet', '🐾 펫 꾸미기'], ['ship', '🚀 우주선 친구'], ['fx', '🎇 특수 효과']];
+PQ.COSMETIC_TYPES = [['avatar', '🧑‍🚀 프로필 캐릭터'], ['theme', '🌌 배경 테마'], ['pet', '🐾 펫 꾸미기'], ['ship', '🚀 우주선 친구'], ['fx', '🎇 특수 효과']];
+PQ.RARITY = ['', '일반', '레어', '에픽', '전설', '신화'];
+/* 상점 종류 (부모님 모드 '상점 관리'에서 가격·순서·숨김을 바꿀 수 있어요) */
+PQ.SHOP_TYPES = PQ.COSMETIC_TYPES.concat([['item', '🛡️ 아이템']]);
 
 /* ---------- 아이템 (게임에 실제로 도움이 되는 것) ---------- */
 PQ.ITEMS = [
@@ -822,11 +919,12 @@ PQ.FREEZE_COST = 40;
 PQ.FREEZE_MAX = 2;
 PQ.CRATE_EVERY = 5;
 
-/* 코인 경제: 루틴 한 주 ≈ 1,200코인(게임 30분 8번). 꾸미기·아이템 가격만 4배로 맞추고,
+/* 코인 경제: 루틴 한 주 ≈ 1,200코인(게임 30분 8번). 아이템 가격은 4배, 우주 꾸미기는 부모님 선물이 더 중요해서 그 절반(2배)으로 맞추고,
    업적·보급 상자는 그대로(주 1번 정도 보너스), 연속 기록 보너스는 2배 */
 PQ.COIN_SCALE = 4;
+PQ.DECO_COIN_SCALE = 2;
 PQ.STREAK_COIN_SCALE = 2;
-PQ.COSMETICS.forEach(c => { c.cost *= PQ.COIN_SCALE; });
+PQ.COSMETICS.forEach(c => { c.cost *= PQ.DECO_COIN_SCALE; });
 PQ.ITEMS.forEach(i => { i.cost *= PQ.COIN_SCALE; });
 PQ.FREEZE_COST *= PQ.COIN_SCALE;
 
@@ -1216,7 +1314,7 @@ PQ.Engine = (function () {
   /* ---------- 상태 생성/마이그레이션 ---------- */
   function newChild(name, avatar) {
     return {
-      id: uid('c'), name: name || '우주 탐험가', avatar: avatar || '🧑‍🚀', createdAt: Date.now(),
+      id: uid('c'), name: name || '우주 탐험가', avatar: avatar || '🧑‍🚀', avatarId: '', createdAt: Date.now(),
       xp: 0, coins: 0, energy: { study: 0, arts: 0, help: 0, grade: 0, kind: 0 }, subE: {}, artE: {}, gradeStars: 0,
       activeDays: {}, frozenDays: {}, freezes: 0, daily: {}, ach: {},
       stats: { done: 0, byCat: {}, early: 0, surprise: 0, excellent: 0, bestStreak: 0, weeklyDone: 0, flags: {} }, weeklyAwards: {},
@@ -1230,7 +1328,8 @@ PQ.Engine = (function () {
       version: 5, createdAt: Date.now(), onboarded: false,
       parent: { pinHash: null, salt: Math.random().toString(36).slice(2, 10), hint: '' },
       settings: defaultSettings(), children: [], activeChildId: null,
-      missions: PQ.defaultMissions(), rewards: PQ.defaultRewards(), completions: [], redemptions: []
+      missions: PQ.defaultMissions(), rewards: PQ.defaultRewards(), completions: [], redemptions: [],
+      shop: { price: {}, order: {}, hidden: {} }
     };
   }
   function fill(target, defaults) {
@@ -1290,7 +1389,10 @@ PQ.Engine = (function () {
       ['done', 'early', 'surprise', 'excellent', 'bestStreak'].forEach(k => { c.stats[k] = Math.max(0, num(c.stats[k])); });
       if (!isObj(c.stats.byCat)) c.stats.byCat = {};
       if (!isObj(c.stats.flags)) c.stats.flags = {};
-      if (PQ.AVATARS.indexOf(c.avatar) < 0) c.avatar = PQ.AVATARS[0];
+      if (typeof c.avatarId !== 'string') c.avatarId = '';
+      const avItem = c.avatarId ? PQ.COSMETICS.find(x => x.id === c.avatarId && x.type === 'avatar') : null;
+      if (avItem && c.owned.indexOf(avItem.id) >= 0) c.avatar = avItem.icon;
+      else { c.avatarId = ''; if (PQ.AVATARS.indexOf(c.avatar) < 0) c.avatar = PQ.AVATARS[0]; }
       c.name = String(c.name || '탐험가').slice(0, 20); c.petName = String(c.petName || '별토리').slice(0, 20);
       if (!PQ.COSMETICS.some(x => x.id === c.theme)) c.theme = 'theme_default';
       c.events = c.events.filter(isObj);
@@ -1361,6 +1463,7 @@ PQ.Engine = (function () {
       if (rd && rd.title === '책 30분 읽기') rd.title = '책 30분 읽기 (만화책 제외)';
       st.version = 5;
     }
+    sanitizeShop(st);
     if (st.children.length && !st.children.find(c => c.id === st.activeChildId)) st.activeChildId = st.children[0].id;
     return st;
   }
@@ -1880,24 +1983,60 @@ PQ.Engine = (function () {
   }
 
   /* ---------- 상점 ---------- */
+  /* 부모님이 바꾼 가격·순서·숨김: state.shop = { price:{id:코인}, order:{종류:[id…]}, hidden:{id:true} } */
+  const shopCatalog = type => type === 'item' ? PQ.ITEMS : PQ.COSMETICS.filter(x => x.type === type);
+  const shopBase = id => PQ.COSMETICS.find(x => x.id === id) || PQ.ITEMS.find(x => x.id === id) || null;
+  function shopOf(state) { if (!isObj(state.shop)) state.shop = { price: {}, order: {}, hidden: {} }; return state.shop; }
+  function shopCost(state, id) {
+    const o = shopOf(state).price[id], b = shopBase(id);
+    return typeof o === 'number' && isFinite(o) ? o : b ? b.cost : 0;
+  }
+  const shopHidden = (state, id) => !!shopOf(state).hidden[id];
+  function shopList(state, type) {
+    const list = shopCatalog(type), ord = shopOf(state).order[type] || [];
+    const rank = id => { const i = ord.indexOf(id); return i < 0 ? 1e6 + list.findIndex(x => x.id === id) : i; };
+    return list.slice().sort((a, b) => rank(a.id) - rank(b.id));
+  }
+  function setShopPrice(state, id, v) {
+    const b = shopBase(id); if (!b) return false;
+    const n = Math.max(0, Math.min(100000, Math.round(Number(v))));
+    if (!isFinite(n)) return false;
+    if (n === b.cost) delete shopOf(state).price[id]; else shopOf(state).price[id] = n;
+    return true;
+  }
+  function setShopOrder(state, type, ids) {
+    const valid = shopCatalog(type).map(x => x.id);
+    shopOf(state).order[type] = ids.filter((id, i) => valid.indexOf(id) >= 0 && ids.indexOf(id) === i);
+  }
+  function sanitizeShop(st) {
+    const sh = isObj(st.shop) ? st.shop : {}, out = { price: {}, order: {}, hidden: {} };
+    if (isObj(sh.price)) Object.keys(sh.price).forEach(id => { const b = shopBase(id), n = Number(sh.price[id]); if (b && isFinite(n)) out.price[id] = Math.max(0, Math.min(100000, Math.round(n))); });
+    if (isObj(sh.hidden)) Object.keys(sh.hidden).forEach(id => { if (shopBase(id) && sh.hidden[id]) out.hidden[id] = true; });
+    if (isObj(sh.order)) PQ.SHOP_TYPES.forEach(([type]) => {
+      if (!Array.isArray(sh.order[type])) return;
+      const valid = shopCatalog(type).map(x => x.id);
+      out.order[type] = sh.order[type].map(String).filter((id, i, a) => valid.indexOf(id) >= 0 && a.indexOf(id) === i);
+    });
+    st.shop = out;
+  }
   function buyFreeze(state, childId) {
-    const c = getChild(state, childId);
-    if (!c || c.coins < PQ.FREEZE_COST || c.freezes >= PQ.FREEZE_MAX) return false;
-    c.coins -= PQ.FREEZE_COST; c.freezes++;
+    const c = getChild(state, childId), cost = shopCost(state, 'freeze');
+    if (!c || c.coins < cost || c.freezes >= PQ.FREEZE_MAX || shopHidden(state, 'freeze')) return false;
+    c.coins -= cost; c.freezes++;
     return true;
   }
   function itemCount(c, id) { return id === 'freeze' ? c.freezes : id === 'crate' ? c.crates : (c.items[id] || 0); }
   function buyItem(state, childId, id) {
-    const c = getChild(state, childId), it = PQ.ITEMS.find(x => x.id === id);
-    if (!c || !it || c.coins < it.cost || itemCount(c, id) >= it.max) return false;
-    c.coins -= it.cost;
+    const c = getChild(state, childId), it = PQ.ITEMS.find(x => x.id === id), cost = shopCost(state, id);
+    if (!c || !it || shopHidden(state, id) || c.coins < cost || itemCount(c, id) >= it.max) return false;
+    c.coins -= cost;
     if (id === 'freeze') c.freezes++; else if (id === 'crate') c.crates++; else c.items[id] = (c.items[id] || 0) + 1;
     return true;
   }
   function buyCosmetic(state, childId, id) {
-    const c = getChild(state, childId), item = PQ.COSMETICS.find(x => x.id === id);
-    if (!c || !item || c.owned.indexOf(id) >= 0 || c.coins < item.cost) return false;
-    c.coins -= item.cost; c.owned.push(id);
+    const c = getChild(state, childId), item = PQ.COSMETICS.find(x => x.id === id), cost = shopCost(state, id);
+    if (!c || !item || c.owned.indexOf(id) >= 0 || shopHidden(state, id) || c.coins < cost) return false;
+    c.coins -= cost; c.owned.push(id);
     equipCosmetic(state, childId, id);
     return true;
   }
@@ -1905,12 +2044,25 @@ PQ.Engine = (function () {
     const c = getChild(state, childId), item = PQ.COSMETICS.find(x => x.id === id);
     if (!c || !item || c.owned.indexOf(id) < 0) return false;
     if (item.type === 'theme') c.theme = id;
+    else if (item.type === 'avatar') { c.avatar = item.icon; c.avatarId = id; }
     else {
       const list = item.type === 'pet' ? c.petItems : item.type === 'fx' ? c.fx : c.ships;
       const i = list.indexOf(id);
       if (i >= 0) list.splice(i, 1); else list.push(id);
     }
     return true;
+  }
+  /* 프로필 캐릭터 고르기: 기본 캐릭터(무료) 또는 상점에서 산 캐릭터 */
+  function setAvatar(state, childId, icon, avatarId) {
+    const c = getChild(state, childId); if (!c) return false;
+    const item = avatarId ? PQ.COSMETICS.find(x => x.id === avatarId && x.type === 'avatar') : null;
+    if (item && c.owned.indexOf(item.id) >= 0) { c.avatar = item.icon; c.avatarId = item.id; return true; }
+    if (PQ.AVATARS.indexOf(icon) >= 0) { c.avatar = icon; c.avatarId = ''; return true; }
+    return false;
+  }
+  function avatarFrame(c) {
+    const item = c && c.avatarId ? PQ.COSMETICS.find(x => x.id === c.avatarId) : null;
+    return item && item.frame ? item.frame : '';
   }
   /* 선물 쿠폰: 구입(owned) → 사용 요청(pending) → 부모님 확인(approved) / 거절·환불(rejected) */
   function requestReward(state, childId, rewardId, now) {
@@ -1992,6 +2144,7 @@ PQ.Engine = (function () {
     newChild, defaultState, migrate, getChild, addChild, removeChild, setPin, checkPin,
     missionAvailable, missionStatus, computeReward, submit, apply, approve, reject, revoke, grantBonus, penalize, penalizeGift, deductCoins,
     currentStreak, dailyCheck, openCrate, buyFreeze, buyItem, buyCosmetic, equipCosmetic, requestReward, giveCoupon, useCoupon, decideRedemption,
+    shopCost, shopHidden, shopList, setShopPrice, setShopOrder, setAvatar, avatarFrame,
     weekKey, weeklyGoal, parentRecord, tierOf,
     readFact, todaySummary, pendingCount, exportJSON, importJSON, toCode
   };
@@ -2311,16 +2464,23 @@ PQ.Render = (function () {
     this.sh = Uint16Array.from(sh); this.al = Uint8Array.from(al); this.rw = Uint16Array.from(rw);
     this.rowOff = new Int32Array(tex.h);
     this.out.fill(0);
+    this.drawn = false;
   };
   Sphere.prototype.draw = function (rot) {
     const t = this.tex, d = t.data, mask = t.w - 1, out = this.out;
     const W = t.w, baseU = rot * W;
     const ro = this.rowOff, dr = this.diffRot;
+    /* 텍스처 위치가 직전 프레임과 한 칸도 다르지 않으면 결과 그림이 완전히 같아요 → 다시 계산하지 않고 그대로 사용
+       (행성은 천천히 돌아서 대부분의 프레임이 이 경우예요. 화면에 보이는 그림은 100% 동일) */
+    let same = this.drawn;
     for (let r = 0; r < t.h; r++) {
       const lat = (0.5 - (r + 0.5) / t.h) * Math.PI;
       const f = dr ? 1 + dr * 0.25 * Math.cos(lat * 2) + dr * 0.08 * Math.sin(lat * 9) : 1;
-      ro[r] = ((Math.floor(baseU * f) % W) + W) % W;
+      const v = ((Math.floor(baseU * f) % W) + W) % W;
+      if (v !== ro[r]) { ro[r] = v; same = false; }
     }
+    if (same) return this.canvas;
+    this.drawn = true;
     const idx = this.idx, u0 = this.u0, vr = this.vr, sh = this.sh, al = this.al, rw = this.rw, n = idx.length;
     for (let k = 0; k < n; k++) {
       const c = d[vr[k] + ((u0[k] + ro[rw[k]]) & mask)];
@@ -2981,7 +3141,7 @@ PQ.Render = (function () {
   /* ---------- 메인 프레임 ---------- */
   function frame(now) {
     if (!S.vm) return;
-    const t = now / 1000, dt = Math.min(0.05, S.last ? t - S.last : 0.016);
+    const t = now / 1000, dt = Math.max(0, Math.min(0.05, S.last ? t - S.last : 0.016));
     S.last = t; S.t = t;
     const ctx = S.ctx, dpr = S.dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -4315,33 +4475,30 @@ PQ.Audio = (function () {
   }
 
   /* ---------- 배경음악 시퀀서 ---------- */
-  let song = null, timer = 0;
-  function makeSong(info, dur) {
-    const ti = Math.min(9, Math.max(0, info.tier | 0)), th = THEMES[ti];
-    const L = ti + Math.min(0.99, info.prog || 0);
+  const tierOfInfo = info => Math.min(9, Math.max(0, (info && info.tier) | 0));
+  const progQ = info => Math.floor(Math.min(0.99, (info && info.prog) || 0) * 4) / 4;
+  /* 반복 재생용 곡: 마디 수를 8의 배수로 맞춰 이음새 없이 이어져요.
+     offline=true 는 미리 녹음용(0초에서 시작), false 는 실시간 재생용(살짝 페이드 인) — 둘은 같은 곡이라 중간에 바꿔도 박자가 딱 맞아요 */
+  function makeSong(info, offline) {
+    const ti = tierOfInfo(info), th = THEMES[ti];
+    const L = ti + progQ(info);
     const shift = [0, 2, -1, 3, 1, -2, 4][(info.variant || 0) % 7] + ((info.universe || 0) * 2) % 5;
-    const bus = ac.createGain(); bus.gain.value = 0.0001; bus.connect(musicBus);
+    const bus = ac.createGain(); bus.gain.value = offline ? 1 : 0.0001; bus.connect(musicBus);
     /* 곡 전용 잔향 입력: bus와 똑같이 페이드돼서, 곡을 끄면 잔향으로 새는 소리도 같이 꺼져요 */
     bus._wetS = ac.createGain(); bus._wetL = ac.createGain();
     bus._wetS.connect(sendS); bus._wetL.connect(sendL);
     const gains = [bus.gain, bus._wetS.gain, bus._wetL.gain];
-    const start = ac.currentTime + 0.12, spb = 60 / th.bpm, step = spb / 4;
-    const bars = Math.max(8, Math.floor(dur / (spb * 4)));
-    const endT = start + bars * spb * 4;
-    gains.forEach(g => {
-      g.setValueAtTime(0.0001, start);
-      g.exponentialRampToValueAtTime(1, start + 2.5);
-      g.setValueAtTime(1, endT - 6);
-      g.exponentialRampToValueAtTime(0.0001, endT + 1.5);
-    });
-    return { th, ti, L, key: th.key + shift, bus, gains, start, step, bars, endT, n: 0, next: start, seed: (info.variant || 0) * 131 + ti * 977 + 7 };
+    const spb = 60 / th.bpm, step = spb / 4, start = offline ? 0 : ac.currentTime + 0.12;
+    const bars = Math.max(8, Math.round(LOOP_SEC / (spb * 4) / 8) * 8), body = bars * spb * 4;
+    if (!offline) gains.forEach(g => { g.setValueAtTime(0.0001, start); g.exponentialRampToValueAtTime(1, start + 2.5); });
+    return { th, ti, L, info, key: th.key + shift, bus, gains, t0: start, start, step, bars, body, endT: start + body, n: 0, next: start, seed: (info.variant || 0) * 131 + ti * 977 + 7 };
   }
   function scheduleStep(s, i, t) {
     const th = s.th, L = s.L, bus = s.bus;
     const bar = Math.floor(i / 16), pos = i % 16;
     if (bar >= s.bars) return;
     const ch = th.prog[Math.floor(bar / 2) % th.prog.length];
-    const intro = bar < 2, outro = bar >= s.bars - 2;
+    const intro = false, outro = false;
     const notes = chordNotes(th, s.key, ch, L >= 2 ? (L >= 5 ? 2 : 1) : 0);
     const barLen = s.step * 16;
     const wet = 0.25 + Math.min(0.45, L * 0.05), long = L >= 2.5;
@@ -4437,69 +4594,215 @@ PQ.Audio = (function () {
     else if (mel === 'synth') V({ f, t, d, v: v * 0.6, type: 'square', lp: 2600, a: 0.01, pad: true, r: 0.15, wet: 0.3, bus, vib: 2 });
     else if (mel === 'musicbox') bell(f * 2, t, v * 0.7, 1.2, { wet: 0.4, bus });
   }
+  /* ---------- 배경음악: 테마마다 한 번만 미리 만들어 두고(오프라인 렌더링) 이음새 없이 계속 반복 재생 ----------
+     예전처럼 음을 실시간으로 계속 합성하면 CPU를 계속 써서 아이패드가 뜨거워져요.
+     미리 녹음해 둔 1분짜리 곡을 반복하면 재생 중 CPU 사용이 거의 없어요. */
+  const LOOP_SEC = 60, TAIL = 6;
+  const loopCache = new Map(), rendering = new Set();
+  let cur = null, want = false, reqId = 0;
+  const loopKey = info => [tierOfInfo(info), progQ(info), (info && info.variant) || 0, ((info && info.universe) || 0) % 5].join('|');
+  function renderLoop(info) {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC) return Promise.reject(new Error('no offline audio'));
+    const th = THEMES[tierOfInfo(info)], barLen = 60 / th.bpm * 4;
+    const bars = Math.max(8, Math.round(LOOP_SEC / barLen / 8) * 8), body = bars * barLen;
+    let off, sr = (ac && ac.sampleRate) || 48000;
+    try { off = new OAC(2, Math.ceil(sr * (body + TAIL)), sr); } catch (e) { sr = 44100; off = new OAC(2, Math.ceil(sr * (body + TAIL)), sr); }
+    const saved = [ac, sfxBus, musicBus, sendS, sendL, noiseBuf];
+    try {
+      ac = off;
+      const out = off.createGain(); out.connect(off.destination);
+      const rs = off.createConvolver(), rl = off.createConvolver();
+      rs.buffer = impulse(1.3, 3); rl.buffer = impulse(4.2, 2.2);
+      sendS = off.createGain(); sendS.gain.value = 0.6; sendS.connect(rs); rs.connect(out);
+      sendL = off.createGain(); sendL.gain.value = 0.55; sendL.connect(rl); rl.connect(out);
+      noiseBuf = off.createBuffer(1, sr * 2, sr);
+      const nd = noiseBuf.getChannelData(0);
+      for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      sfxBus = musicBus = out;
+      const s = makeSong(info, true);
+      for (let i = 0; i < s.bars * 16; i++) { try { scheduleStep(s, i, i * s.step); } catch (e) { /* 한 음이 실패해도 계속 */ } }
+    } finally { [ac, sfxBus, musicBus, sendS, sendL, noiseBuf] = saved; }
+    return new Promise((res, rej) => {
+      off.oncomplete = e => res(e.renderedBuffer);
+      try { const p = off.startRendering(); if (p && p.then) p.then(res, rej); } catch (e) { rej(e); }
+    }).then(buf => {
+      /* 곡 끝에서 이어지는 잔향을 곡 앞부분에 겹쳐 넣어, 반복될 때 뚝 끊기지 않게 해요 */
+      const N = Math.round(body * sr), out = off.createBuffer(2, N, sr);
+      for (let ch = 0; ch < 2; ch++) {
+        const src = buf.getChannelData(ch), dst = out.getChannelData(ch);
+        dst.set(src.subarray(0, N));
+        for (let i = N; i < src.length; i++) dst[i - N] += src[i];
+      }
+      return out;
+    });
+  }
+  function fadeOutCur(f) {
+    const c = cur; cur = null;
+    if (!c || !ac) return;
+    try { const t = ac.currentTime; c.g.gain.cancelScheduledValues(t); c.g.gain.setValueAtTime(Math.max(0.0001, c.g.gain.value), t); c.g.gain.exponentialRampToValueAtTime(0.0001, t + f); c.src.stop(t + f + 0.05); } catch (e) { /* 무시 */ }
+    setTimeout(() => { try { c.g.disconnect(); } catch (e) { /* 무시 */ } }, f * 1000 + 300);
+  }
+  /* 녹음된 곡 재생. live를 주면 그 실시간 곡과 박자를 맞춰 0.4초 만에 자연스럽게 넘겨받아요 */
+  function startBuffer(buf, key, live) {
+    const a = ctx(); if (!a) return;
+    fadeOutCur(0.8);
+    const src = a.createBufferSource(), g = a.createGain(), t = a.currentTime + 0.12;
+    src.buffer = buf; src.loop = true;
+    src.connect(g); g.connect(musicBus);
+    if (live) {
+      const offset = (((t - live.t0) % live.body) + live.body) % live.body;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 0.4);
+      live.gains.forEach(x => { try { x.cancelScheduledValues(t); x.setValueAtTime(Math.max(0.0001, x.value), t); x.linearRampToValueAtTime(0.0001, t + 0.4); } catch (e) { /* 무시 */ } });
+      endSong(live, 0.6);
+      src.start(t, Math.min(buf.duration - 0.01, offset));
+    } else {
+      stopLive(0.8);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + 1.6);
+      src.start(t);
+    }
+    cur = { key, src, g };
+  }
+
+  /* 실시간 합성: 녹음이 끝나기 전까지(또는 녹음을 못 하는 기기에서) 같은 곡을 바로 들려줘요 */
+  let song = null, timer = 0;
   function tick() {
     if (!song || !ac) return;
-    const s = song;
+    const s = song, total = s.bars * 16;
     while (s.next < ac.currentTime + 0.3) {
-      if (s.next >= s.endT) { endSong(s, 1.6); return; }
-      try { scheduleStep(s, s.n, s.next); } catch (e) { /* 한 음이 실패해도 음악은 계속 */ }
-      s.n++; s.next += s.step;
+      try { scheduleStep(s, s.n % total, s.next); } catch (e) { /* 한 음이 실패해도 음악은 계속 */ }
+      s.n++; s.next = s.t0 + s.n * s.step;
     }
   }
   function endSong(s, after) {
     if (song === s) { song = null; clearInterval(timer); timer = 0; }
     setTimeout(() => { [s.bus, s.bus._wetS, s.bus._wetL].forEach(n => { try { n.disconnect(); } catch (e) { /* 무시 */ } }); }, (after || 0.1) * 1000 + 200);
   }
-  let epoch = 0;
-  function stopMusic(fade) {
-    epoch++;
+  function stopLive(f) {
     if (!song || !ac) return;
-    const s = song, t = ac.currentTime, f = fade === undefined ? 1.2 : fade;
+    const s = song, t = ac.currentTime;
     s.gains.forEach(g => { try { g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t); g.exponentialRampToValueAtTime(0.0001, t + f); } catch (e) { /* 무시 */ } });
     endSong(s, f);
   }
-  function playMusic(info, dur) {
-    if (!musicOn || document.hidden) return false;
-    const a = ctx(); if (!a) return false;
-    if (song) { const s = song; s.gains.forEach(g => { try { const t = a.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t); g.exponentialRampToValueAtTime(0.0001, t + 0.8); } catch (e) { /* 무시 */ } }); endSong(s, 0.8); }
-    song = makeSong(info || tierInfo, dur || 60);
+  function startLive(info, key) {
+    stopLive(0.8);
+    song = makeSong(info, false);
+    song.lk = key;
     timer = setInterval(tick, 80);
     tick();
+  }
+
+  /* 배경음악 켜기: 🎵 버튼으로 끌 때까지 계속 반복돼요 */
+  function playMusic(info) {
+    if (!musicOn || document.hidden) return false;
+    const a = ctx(); if (!a) return false;
+    want = true;
+    info = info || tierInfo;
+    const key = loopKey(info);
+    if ((cur && cur.key === key) || (song && song.lk === key)) return true;
+    reqId++;
+    if (loopCache.has(key)) { startBuffer(loopCache.get(key), key); return true; }
+    fadeOutCur(0.8);
+    startLive(info, key);
+    if (!rendering.has(key)) {
+      rendering.add(key);
+      /* 화면이 먼저 반응하도록 살짝 뒤에 녹음 시작 */
+      setTimeout(() => {
+        let p;
+        try { p = renderLoop(info); } catch (e) { p = Promise.reject(e); }
+        p.then(buf => {
+          rendering.delete(key);
+          loopCache.set(key, buf);
+          while (loopCache.size > 2) loopCache.delete(loopCache.keys().next().value);
+          if (song && song.lk === key && want && musicOn && !document.hidden && ac) startBuffer(buf, key, song);
+        }, () => { rendering.delete(key); /* 녹음이 안 되면 실시간으로 계속 반복 */ });
+      }, 400);
+    }
     return true;
+  }  /* 화면을 나갈 때: 소리만 멈추고 '켜 둔 상태'는 기억 → 돌아와서 화면을 누르면 다시 흘러나와요 */
+  function pauseMusic(f) { reqId++; fadeOutCur(f); stopLive(f); }
+  let epoch = 0;
+  function stopMusic(fade) {
+    epoch++; want = false;
+    pauseMusic(fade === undefined ? 1.2 : fade);
   }
   /* 잠시 뒤에 시작 (그 사이 음악을 끄거나 화면을 나가면 시작하지 않아요) */
   function playMusicLater(info, dur, ms, onStart) {
     const my = epoch;
-    setTimeout(() => { if (my === epoch && !document.hidden && playMusic(info, dur) && onStart) onStart(); }, ms);
+    setTimeout(() => { if (my === epoch && !document.hidden && playMusic(info) && onStart) onStart(); }, ms);
   }
 
+  /* ---------- 아이패드 소리 복구 ----------
+     iOS는 앱이 홈 화면으로 나갔다 오면 오디오를 '중단(interrupted)' 상태로 두거나,
+     '재생 중'이라고 하면서 실제로는 소리가 안 나는 경우가 있어요(웹킷 문제).
+     → 돌아온 뒤 첫 터치 때 오디오를 새로 만들고, 켜 두었던 음악을 다시 틀어요. */
+  let stale = false, lastSound = 0;
+  function silent(a) { try { const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource(); s.buffer = b; s.connect(a.destination); s.start(0); } catch (e) { /* 무시 */ } }
+  function recreate() {
+    const old = ac;
+    ac = null; cur = null; reqId++;
+    if (song) { clearInterval(timer); timer = 0; song = null; }
+    if (old) { try { const p = old.close(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* 무시 */ } }
+    return ctx();
+  }
+  function healthCheck() {
+    if (!ac) return;
+    const a = ac, t0 = a.currentTime;
+    setTimeout(() => { if (a === ac && !document.hidden && (a.state !== 'running' || a.currentTime === t0)) stale = true; }, 500);
+  }
+  function onGesture() {
+    if (!ac || document.hidden) return;
+    let a = ac;
+    if (stale || a.state === 'closed') { stale = false; a = recreate(); if (!a) return; }
+    if (a.state !== 'running') { try { const p = a.resume(); if (p && p.catch) p.catch(() => { stale = true; }); } catch (e) { stale = true; } }
+    silent(a);
+    lastSound = performance.now();
+    healthCheck();
+    if (want && musicOn && !cur && !song) playMusic(tierInfo);
+  }
+  ['pointerdown', 'touchend', 'keydown'].forEach(n => document.addEventListener(n, onGesture, true));
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      hiddenAt = Date.now();
+      pauseMusic(0.2);
+      /* 화면 밖에서는 오디오 엔진도 잠재워 배터리를 아껴요 */
+      setTimeout(() => { if (document.hidden && ac && ac.state === 'running') { try { ac.suspend(); } catch (e) { /* 무시 */ } } }, 300);
+    } else if (hiddenAt && Date.now() - hiddenAt > 800) stale = true;
+  });
+  window.addEventListener('pageshow', e => { if (e.persisted) stale = true; });
+  /* 한동안 소리가 없으면 오디오 엔진을 쉬게 해요 (다음 터치 때 바로 다시 깨어나요) */
+  setInterval(() => {
+    if (ac && ac.state === 'running' && !cur && !song && performance.now() - lastSound > 15000) { try { ac.suspend(); } catch (e) { /* 무시 */ } }
+  }, 5000);
+
   let introDone = false;
-  document.addEventListener('visibilitychange', () => { if (document.hidden) stopMusic(0.3); });
 
   return {
-    unlock() {
-      const a = ctx(); if (!a) return;
-      try { const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource(); s.buffer = b; s.connect(a.destination); s.start(0); } catch (e) { /* 무시 */ }
-    },
+    unlock() { const a = ctx(); if (!a) return; silent(a); lastSound = performance.now(); },
     running: () => !!ac && ac.state === 'running',
-    play(n) { if (!sfxOn || !sfx[n]) return; const a = ctx(); if (!a) return; try { sfx[n](); } catch (e) { /* 무시 */ } },
+    play(n) { if (!sfxOn || !sfx[n]) return; const a = ctx(); if (!a) return; lastSound = performance.now(); try { sfx[n](); } catch (e) { /* 무시 */ } },
     setEnabled(v) { sfxOn = !!v; },
-    setMusic(v) { musicOn = !!v; if (!musicOn) stopMusic(0.5); },
+    setMusic(v) { musicOn = !!v; if (!musicOn && want) stopMusic(0.5); },
     setTier(info) { if (!info) return; tierInfo = info; T = info.level || 0; },
-    playMusic(info, dur) { return playMusic(info, dur); },
+    playMusic(info) { return playMusic(info); },
     playMusicLater,
     stopMusic,
-    isPlaying: () => !!song,
-    themeName: info => (THEMES[Math.min(9, ((info || tierInfo).tier) | 0)] || THEMES[0]).name,
-    /* 첫 터치 때 한 번: 지금 단계의 테마를 1분 동안 */
+    /* 🎵 켜짐 상태 (곡을 준비 중이거나 화면 밖이라 잠시 멈춘 경우도 '켜짐') */
+    isPlaying: () => want && musicOn,
+    themeName: info => (THEMES[tierOfInfo(info || tierInfo)] || THEMES[0]).name,
+    /* 첫 터치 때 한 번: 지금 단계의 테마를 반복 재생 */
     intro(onStart) {
       if (introDone || !musicOn) return;
       const a = ctx(); if (!a) return;
       introDone = true;
-      const go = ms => playMusicLater(tierInfo, 60, ms, onStart);
+      const go = ms => playMusicLater(tierInfo, 0, ms, onStart);
       if (a.state === 'running') go(150);
       else { try { a.resume().then(() => go(100), () => { introDone = false; }); } catch (e) { introDone = false; } }
     },
+    /* 테스트용 */
+    _debug: () => ({ state: ac && ac.state, want, cur: cur && cur.key, live: song && song.lk, rendering: [...rendering], cached: [...loopCache.keys()], stale }),
+    _renderLoop: renderLoop,
     get tier() { return T; }
   };
 })();
@@ -4633,6 +4936,8 @@ PQ.UI = (function () {
   function updateHUD(c) {
     const li = E.levelInfo(c.xp, st.settings.levelSpeed);
     $('#hudAvatar').textContent = c.avatar;
+    $('#hudAvatar').classList.add('av');
+    $('#hudAvatar').dataset.frame = E.avatarFrame(c);
     $('#hudName').textContent = c.name;
     $('#hudPlanet').textContent = stageLabel(li);
     $('#hudLv').textContent = 'Lv.' + li.level;
@@ -5038,7 +5343,7 @@ PQ.UI = (function () {
     A.play(big); R.confetti(); closeSheet(); vibrate([30, 60, 30]);
     if (big !== 'level') {
       const c = child();
-      if (c) A.playMusicLater(E.tierOf(E.levelInfo(c.xp, st.settings.levelSpeed)), 60, big === 'bigbang' ? 3400 : big === 'evolveBig' ? 2800 : 2200, updateMusicBtn);
+      if (c && A.isPlaying()) A.playMusicLater(E.tierOf(E.levelInfo(c.xp, st.settings.levelSpeed)), 0, big === 'bigbang' ? 3400 : big === 'evolveBig' ? 2800 : 2200, updateMusicBtn);
       if (big !== 'evolve') setTimeout(() => R.confetti(), 900);
     }
     const p = PQ.STAGES[ev.stageIdx];
@@ -5186,22 +5491,26 @@ PQ.UI = (function () {
       }
     } else if (ui.shopSeg === 'deco') {
       PQ.COSMETIC_TYPES.forEach(([type, title]) => {
-        html += `<div class="section-title">${title}${type === 'pet' && E.trackInfo(c.energy.kind || 0, PQ.TRACK_THRESHOLDS.kind).level < 2 ? ' <small>펫이 부화하면 보여요</small>' : type === 'fx' ? ' <small>여러 개를 함께 켤 수 있어요</small>' : ''}</div><div class="shop-grid">`;
-        html += PQ.COSMETICS.filter(x => x.type === type).map(x => {
-          const own = c.owned.indexOf(x.id) >= 0;
+        const items = E.shopList(st, type).filter(x => !E.shopHidden(st, x.id) || c.owned.indexOf(x.id) >= 0);
+        if (!items.length) return;
+        html += `<div class="section-title">${title}${type === 'avatar' ? ' <small>사면 내 프로필 사진이 바뀌어요 · 희귀할수록 테두리가 화려해요</small>' : type === 'pet' && E.trackInfo(c.energy.kind || 0, PQ.TRACK_THRESHOLDS.kind).level < 2 ? ' <small>펫이 부화하면 보여요</small>' : type === 'fx' ? ' <small>여러 개를 함께 켤 수 있어요</small>' : ''}</div><div class="shop-grid">`;
+        html += items.map(x => {
+          const own = c.owned.indexOf(x.id) >= 0, cost = E.shopCost(st, x.id);
           const list = type === 'pet' ? c.petItems : type === 'fx' ? (c.fx || []) : c.ships;
-          const on = type === 'theme' ? c.theme === x.id : list.indexOf(x.id) >= 0;
-          const btn = own ? `<button class="btn small ${on ? 'good' : 'ghost'} block" data-act="equip" data-id="${x.id}">${on ? (type === 'theme' ? '사용 중' : '켜짐 ✓') : '사용하기'}</button>`
-            : c.coins >= x.cost ? `<button class="btn small block" data-act="buy" data-id="${x.id}">구입 🪙${x.cost}</button>` : `<button class="btn small ghost block" disabled>🪙${x.cost}</button>`;
-          return `<div class="item ${on ? 'equipped' : ''}"><div class="ic">${x.icon}</div><b>${x.name}</b>${btn}</div>`;
+          const on = type === 'theme' ? c.theme === x.id : type === 'avatar' ? c.avatarId === x.id : list.indexOf(x.id) >= 0;
+          const single = type === 'theme' || type === 'avatar';
+          const btn = own ? `<button class="btn small ${on ? 'good' : 'ghost'} block" data-act="equip" data-id="${x.id}">${on ? (single ? '사용 중' : '켜짐 ✓') : '사용하기'}</button>`
+            : c.coins >= cost ? `<button class="btn small block" data-act="buy" data-id="${x.id}">${cost ? '구입 🪙' + cost : '무료로 받기'}</button>` : `<button class="btn small ghost block" disabled>🪙${cost}</button>`;
+          const ic = type === 'avatar' ? `<div class="ic"><span class="avatar av shop-av" data-frame="${x.frame || ''}">${x.icon}</span></div><span class="rarity r${x.r}">${PQ.RARITY[x.r]}</span>` : `<div class="ic">${x.icon}</div>`;
+          return `<div class="item ${on ? 'equipped' : ''}">${ic}<b>${x.name}</b>${btn}</div>`;
         }).join('') + '</div>';
       });
     } else {
       const count = id => id === 'freeze' ? c.freezes : id === 'crate' ? c.crates : ((c.items || {})[id] || 0);
       html += `<p class="muted" style="margin:0 4px 10px">아이템은 미션을 완료할 때 <b>자동으로</b> 사용돼요.</p><div class="shop-grid">`;
-      html += PQ.ITEMS.map(it => {
-        const n = count(it.id), full = n >= it.max;
-        const btn = full ? '<button class="btn small ghost block" disabled>가득 찼어요</button>' : c.coins >= it.cost ? `<button class="btn small block" data-act="buyItem" data-id="${it.id}">구입 🪙${it.cost}</button>` : `<button class="btn small ghost block" disabled>🪙${it.cost}</button>`;
+      html += E.shopList(st, 'item').filter(it => !E.shopHidden(st, it.id) || count(it.id) > 0).map(it => {
+        const n = count(it.id), full = n >= it.max, cost = E.shopCost(st, it.id), hid = E.shopHidden(st, it.id);
+        const btn = hid ? '' : full ? '<button class="btn small ghost block" disabled>가득 찼어요</button>' : c.coins >= cost ? `<button class="btn small block" data-act="buyItem" data-id="${it.id}">${cost ? '구입 🪙' + cost : '무료로 받기'}</button>` : `<button class="btn small ghost block" disabled>🪙${cost}</button>`;
         const open = it.id === 'crate' && c.crates ? `<button class="btn small good block" data-act="crate">지금 열기 (${c.crates}개)</button>` : '';
         return `<div class="item ${n ? 'equipped' : ''}"><div class="ic">${it.icon}</div><b>${it.name}</b><span class="muted">${it.desc}</span><span class="tag">보유 ${n}/${it.max}</span>${btn}${open}</div>`;
       }).join('') + '</div>';
@@ -5380,7 +5689,7 @@ PQ.UI = (function () {
       case 'music':
         if (A.isPlaying()) { A.stopMusic(1); setTimeout(updateMusicBtn, 50); toast('🎵', '배경음악을 껐어요'); }
         else if (st.settings.music === false) toast('🔇', '<b>배경음악이 꺼져 있어요</b><small>부모님 모드 ⚙️설정에서 켤 수 있어요</small>');
-        else { A.playMusic(E.tierOf(E.levelInfo(c.xp, st.settings.levelSpeed)), 60); updateMusicBtn(); toast('🎵', `<b>${esc(A.themeName())} 테마</b><small>1분 동안 흘러나와요</small>`); }
+        else { A.playMusic(E.tierOf(E.levelInfo(c.xp, st.settings.levelSpeed))); updateMusicBtn(); toast('🎵', `<b>${esc(A.themeName())} 테마</b><small>계속 반복돼요 · 🎵을 다시 누르면 꺼져요</small>`); }
         break;
       case 'closeSheet': closeSheet(); break;
       case 'filter': ui.filter = el.dataset.f; A.play('tap'); renderSheet(); break;
@@ -5406,7 +5715,12 @@ PQ.UI = (function () {
         break;
       }
       case 'useCoupon': useCouponFlow(el.dataset.id); break;
-      case 'buy': if (E.buyCosmetic(st, c.id, el.dataset.id)) { A.play('coin'); R.burst(innerWidth / 2, innerHeight / 2, ['#ffd54f', '#fff'], 24); toast('✨', '<b>구입 완료!</b>'); commit(); } break;
+      case 'buy': if (E.buyCosmetic(st, c.id, el.dataset.id)) {
+        const it = PQ.COSMETICS.find(x => x.id === el.dataset.id);
+        A.play('coin'); R.burst(innerWidth / 2, innerHeight / 2, ['#ffd54f', '#fff'], 24);
+        toast(it && it.type === 'avatar' ? it.icon : '✨', it && it.type === 'avatar' ? `<b>${esc(it.name)}</b><small>내 프로필 캐릭터가 바뀌었어요!</small>` : '<b>구입 완료!</b>');
+        commit();
+      } break;
       case 'equip': E.equipCosmetic(st, c.id, el.dataset.id); A.play('tap'); commit(); break;
       case 'buyFreeze': if (E.buyFreeze(st, c.id)) { A.play('coin'); toast('🛡️', '<b>보호막 구입!</b><small>하루를 쉬어도 연속 기록이 지켜져요</small>'); commit(); } break;
       case 'buyItem': {
@@ -5439,7 +5753,7 @@ PQ.UI = (function () {
       <p>늦게라도 해내면 연속 기록🔥이 이어지고 콤보도 받을 수 있어요!</p><div class="actions"><button class="btn" data-m="ok">알겠어요!</button></div>`);
   }
   function openProfiles() {
-    const list = st.children.map(k => `<button class="pitem" data-m="${esc(k.id)}" style="width:100%;text-align:left${k.id === st.activeChildId ? ';border-color:var(--gold)' : ''}"><span class="avatar">${esc(k.avatar)}</span>
+    const list = st.children.map(k => `<button class="pitem" data-m="${esc(k.id)}" style="width:100%;text-align:left${k.id === st.activeChildId ? ';border-color:var(--gold)' : ''}"><span class="avatar av" data-frame="${E.avatarFrame(k)}">${esc(k.avatar)}</span>
       <span class="info"><b>${esc(k.name)}</b><small>Lv.${E.levelInfo(k.xp, st.settings.levelSpeed).level} · 🪙${k.coins}</small></span>${k.id === st.activeChildId ? '⭐' : ''}</button>`).join('');
     modal(`<h2>누가 플레이하나요?</h2><div class="plist" style="margin:12px 0">${list}</div><p class="muted">아이 추가·수정은 🔒 부모님 모드에서 할 수 있어요</p>
       <div class="actions"><button class="btn ghost" data-m="close">닫기</button></div>`).then(v => {
@@ -5521,18 +5835,21 @@ PQ.UI = (function () {
     R.confetti(); A.play('level');
     refresh();
   }
-  function childForm(title, name, avatar, cancellable) {
-    let av = avatar || PQ.AVATARS[0], out = null;
+  function childForm(title, name, avatar, cancellable, kid) {
+    let av = avatar || PQ.AVATARS[0], avId = kid ? kid.avatarId || '' : '', out = null;
+    const bought = kid ? PQ.COSMETICS.filter(x => x.type === 'avatar' && kid.owned.indexOf(x.id) >= 0) : [];
+    const isOn = (a, id) => id ? id === avId : !avId && a === av;
     return modal(`<h2>${title}</h2><div class="form"><label>이름 (별명)</label><input type="text" id="cname" maxlength="12" value="${esc(name || '')}" placeholder="예: 지우">
-      <label>캐릭터</label><div class="emoji-grid">${PQ.AVATARS.map(a => `<button data-av="${a}" class="${a === av ? 'on' : ''}">${a}</button>`).join('')}</div></div>
+      <label>캐릭터</label><div class="emoji-grid">${PQ.AVATARS.map(a => `<button data-av="${a}" data-avid="" class="${isOn(a, '') ? 'on' : ''}">${a}</button>`).join('')}${bought.map(x => `<button data-av="${x.icon}" data-avid="${x.id}" class="${isOn(x.icon, x.id) ? 'on' : ''}" title="${esc(x.name)}"><span class="av" data-frame="${x.frame || ''}">${x.icon}</span></button>`).join('')}</div>
+      ${kid ? '<p class="muted" style="margin:6px 2px 0;font-size:12px">✨ 우주 상점 → 프로필 캐릭터에서 더 멋진 캐릭터를 살 수 있어요</p>' : ''}</div>
       <div class="actions">${cancellable ? '<button class="btn ghost" data-m="no">취소</button>' : ''}<button class="btn" data-m="ok">저장</button></div>`, {
       dismiss: !!cancellable,
-      onShow(w) { w.addEventListener('click', e => { const b = e.target.closest('[data-av]'); if (b) { av = b.dataset.av; $$('[data-av]', w).forEach(x => x.classList.toggle('on', x === b)); } }); },
+      onShow(w) { w.addEventListener('click', e => { const b = e.target.closest('[data-av]'); if (b) { av = b.dataset.av; avId = b.dataset.avid || ''; $$('[data-av]', w).forEach(x => x.classList.toggle('on', x === b)); } }); },
       onAction(v, w) {
         if (v !== 'ok') return true;
         const n = $('#cname', w).value.trim();
         if (!n) { A.play('error'); toast('✏️', '이름을 입력해 주세요'); return false; }
-        out = { name: n, avatar: av };
+        out = { name: n, avatar: av, avatarId: avId };
         return true;
       }
     }).then(() => out);
@@ -5586,7 +5903,7 @@ PQ.UI = (function () {
 
   return {
     init, refresh, drainEvents, checkSurprises, openTab, closeSheet, modal, confirmBox, toast, promptBox, childForm,
-    esc, $, $$, fmtTime, fmtLeft, subName, daysText, hourLabel, buildVM, weeklyRows, weekStrip, weeklyMsg, get state() { return st; }, setState(s) { st = s; }, save, commit
+    esc, $, $$, fmtTime, fmtLeft, subName, daysText, hourLabel, buildVM, weeklyRows, weekStrip, weeklyMsg, get state() { return st; }, setState(s) { st = s; }, save, commit, vibrate
   };
 })();
 
@@ -5720,13 +6037,13 @@ PQ.Parent = (function () {
   }
 
   /* ---------- 렌더 ---------- */
-  const TABS = [['approve', '✅ 승인'], ['missions', '📋 미션'], ['surprise', '☄️ 돌발 미션'], ['rewards', '🎁 보상'], ['kids', '👧 아이'], ['report', '📊 기록'], ['settings', '⚙️ 설정'], ['backup', '💾 백업']];
+  const TABS = [['approve', '✅ 승인'], ['missions', '📋 미션'], ['surprise', '☄️ 돌발 미션'], ['rewards', '🎁 보상'], ['shop', '🛍️ 상점'], ['kids', '👧 아이'], ['report', '📊 기록'], ['settings', '⚙️ 설정'], ['backup', '💾 백업']];
   function render() {
     if (!isOpen) return;
     const s = st(), pc = E.pendingCount(s);
     const body = $('#pBody'), sc = body.scrollTop;
     $('#pTabs').innerHTML = TABS.map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-pact="tab" data-t="${k}">${l}${k === 'approve' && pc ? ` <span class="badge" style="position:static;display:inline-grid">${pc}</span>` : ''}</button>`).join('');
-    const f = { approve: rApprove, missions: rMissions, surprise: rSurprise, rewards: rRewards, kids: rKids, report: rReport, settings: rSettings, backup: rBackup }[tab];
+    const f = { approve: rApprove, missions: rMissions, surprise: rSurprise, rewards: rRewards, shop: rShop, kids: rKids, report: rReport, settings: rSettings, backup: rBackup }[tab];
     body.innerHTML = `<div class="inner">${f(s)}</div>`;
     body.scrollTop = sc;
   }
@@ -5764,13 +6081,15 @@ PQ.Parent = (function () {
     if (m.assignees && m.assignees.length) bits.push('대상: ' + m.assignees.map(id => (E.getChild(s, id) || {}).name).filter(Boolean).join(', '));
     return bits.join(' · ');
   }
+  const SORT_TIP = '<p class="sort-tip">⠿ 줄을 <b>길게 눌러</b> 위아래로 끌면 순서가 바뀌어요 (아이 화면에도 그 순서로 보여요)</p>';
+  const HANDLE = '<span class="drag-handle" aria-hidden="true">⠿</span>';
   function rMissions(s) {
-    let h = `<div class="row" style="margin:6px 0 4px"><button class="btn" data-pact="newMission">＋ 새 미션 만들기</button><span class="muted grow">분야를 고르면 그 분야의 발전(위성·고리·정거장·별자리·펫)이 자라요</span></div>`;
+    let h = `<div class="row" style="margin:6px 0 4px"><button class="btn" data-pact="newMission">＋ 새 미션 만들기</button><span class="muted grow">분야를 고르면 그 분야의 발전(위성·고리·정거장·별자리·펫)이 자라요</span></div>${SORT_TIP}`;
     PQ.CAT_ORDER.forEach(k => {
       const list = s.missions.filter(m => m.cat === k && m.type !== 'surprise');
       const cat = PQ.CATS[k];
-      h += `<div class="section-title">${cat.icon} ${cat.name} <small>→ ${cat.trackIcon} ${cat.track}</small></div><div class="plist">`;
-      h += list.length ? list.map(m => `<div class="pitem ${m.active ? '' : 'off'}"><span class="ic">${esc(m.icon)}</span><div class="info"><b>${esc(m.title)}</b><small>${esc(missionLine(m, s))}</small></div>
+      h += `<div class="section-title">${cat.icon} ${cat.name} <small>→ ${cat.trackIcon} ${cat.track}</small></div><div class="plist" data-sortlist="mission:${k}">`;
+      h += list.length ? list.map(m => `<div class="pitem ${m.active ? '' : 'off'}" data-sid="${m.id}">${HANDLE}<span class="ic">${esc(m.icon)}</span><div class="info"><b>${esc(m.title)}</b><small>${esc(missionLine(m, s))}</small></div>
         <label class="switch" title="사용"><input type="checkbox" data-ptoggle="mission" data-id="${m.id}" ${m.active ? 'checked' : ''}><i></i></label>
         <button class="btn small ghost" data-pact="editMission" data-id="${m.id}">편집</button></div>`).join('') : '<div class="card muted">이 분야의 미션이 없어요</div>';
       h += '</div>';
@@ -5793,17 +6112,17 @@ PQ.Parent = (function () {
   }
   function rRewards(s) {
     let h = `<div class="row" style="margin:6px 0"><button class="btn" data-pact="newReward">＋ 선물 추가</button><span class="muted grow">아이는 코인으로 '쿠폰'을 사서 쿠폰함에 모아 두고, 쓸 때 부모님 PIN으로 확인해요.</span></div>
-      <div class="card muted" style="margin-bottom:8px">💡 가격 기준: <b style="color:#fff">🪙150</b> = 게임 30분 = 유튜브 10분 = 피자 1번 = 햄버거·감튀 3번(50) = 아이스크림 5번(30) = 쇼핑몰 저녁 0.5번(300)<br>필수 항목(공부 전 과목 국·수·과·사 + 피아노 + 발레 + 독서·만화책 제외)의 한 주 할당량을 7시 전에 모두 채우면 약 <b style="color:#fff">🪙1,200 = 게임 30분 8번(약 4시간)</b>을 모아요 (필수 미션 25~30코인 + 콤보 + 주간 특별 보상 100).<br>👎 벌로 선물을 뺄 수도 있어요: 그 선물 쿠폰이 있으면 회수, 없으면 그 가격만큼 코인이 빠지고 <b style="color:#ff8a80">0 아래(마이너스)</b>까지 내려가요.</div><div class="plist">`;
-    h += s.rewards.length ? s.rewards.map(r => `<div class="pitem ${r.active ? '' : 'off'}"><span class="ic">${esc(r.icon)}</span><div class="info"><b>${esc(r.title)}</b><small>🪙 ${r.cost}${r.active ? '' : ' · 숨김'}</small></div>
+      <div class="card muted" style="margin-bottom:8px">💡 가격 기준: <b style="color:#fff">🪙150</b> = 게임 30분 = 유튜브 10분 = 피자 1번 = 햄버거·감튀 3번(50) = 아이스크림 5번(30) = 쇼핑몰 저녁 0.5번(300)<br>필수 항목(공부 전 과목 국·수·과·사 + 피아노 + 발레 + 독서·만화책 제외)의 한 주 할당량을 7시 전에 모두 채우면 약 <b style="color:#fff">🪙1,200 = 게임 30분 8번(약 4시간)</b>을 모아요 (필수 미션 25~30코인 + 콤보 + 주간 특별 보상 100).<br>      👎 벌로 선물을 뺄 수도 있어요: 그 선물 쿠폰이 있으면 회수, 없으면 그 가격만큼 코인이 빠지고 <b style="color:#ff8a80">0 아래(마이너스)</b>까지 내려가요.</div>${SORT_TIP}<div class="plist" data-sortlist="reward">`;
+          h += s.rewards.length ? s.rewards.map(r => `<div class="pitem ${r.active ? '' : 'off'}" data-sid="${r.id}">${HANDLE}<span class="ic">${esc(r.icon)}</span><div class="info"><b>${esc(r.title)}</b><small>🪙 ${r.cost}${r.active ? '' : ' · 숨김'}</small></div>
       <label class="switch" title="보이기/숨기기"><input type="checkbox" data-ptoggle="reward" data-id="${r.id}" ${r.active ? 'checked' : ''}><i></i></label>
       <button class="btn small ghost" data-pact="editReward" data-id="${r.id}">편집</button><button class="btn small ghost" data-pact="delReward" data-id="${r.id}">🗑 삭제</button></div>`).join('') : '<div class="card muted">선물이 없어요. ＋ 선물 추가로 만들어 주세요.</div>';
     return h + '</div>';
   }
   function rKids(s) {
-    let h = `<div class="row" style="margin:6px 0"><button class="btn" data-pact="addKid">＋ 아이 추가</button><span class="muted grow">형제자매가 각자 자기 행성을 키울 수 있어요</span></div><div class="plist">`;
+    let h = `<div class="row" style="margin:6px 0"><button class="btn" data-pact="addKid">＋ 아이 추가</button><span class="muted grow">형제자매가 각자 자기 행성을 키울 수 있어요</span></div>${s.children.length > 1 ? SORT_TIP : ''}<div class="plist" data-sortlist="kid">`;
     h += s.children.map(c => {
       const li = E.levelInfo(c.xp, s.settings.levelSpeed);
-      return `<div class="card"><div class="row"><span class="avatar">${esc(c.avatar)}</span><div class="grow"><b style="font-size:17px">${esc(c.name)}</b>${c.id === s.activeChildId ? ' <span class="tag">플레이 중</span>' : ''}<br>
+      return `<div class="card" data-sid="${c.id}"><div class="row">${s.children.length > 1 ? HANDLE : ''}<span class="avatar av" data-frame="${E.avatarFrame(c)}">${esc(c.avatar)}</span><div class="grow"><b style="font-size:17px">${esc(c.name)}</b>${c.id === s.activeChildId ? ' <span class="tag">플레이 중</span>' : ''}<br>
         <small class="muted">Lv.${li.level} ${esc(li.phase === 'cycle' ? (li.universe ? PQ.UNIVERSES[li.universe].name + ' ' : '') + li.stage.name : li.phase === 'creator' ? '우주 창조자' : '창조자 가족')} · 총 ${c.xp} XP · 🪙${c.coins} · 🔥${E.currentStreak(s, c, Date.now())}일 · 미션 ${c.stats.done}개</small></div></div>
         <div class="row" style="margin-top:10px"><button class="btn small good" data-pact="quickCoin" data-id="${c.id}">🪙 코인 주기/빼기</button><button class="btn small ghost" data-pact="giveCoupon" data-id="${c.id}">🎟️ 쿠폰 선물</button><button class="btn small ghost" data-pact="bonus" data-id="${c.id}">👍 칭찬 (경험치)</button><button class="btn small ghost" data-pact="penalty" data-id="${c.id}">👎 벌</button>
         <button class="btn small ghost" data-pact="editKid" data-id="${c.id}">✏️ 수정</button>${c.id !== s.activeChildId ? `<button class="btn small ghost" data-pact="playKid" data-id="${c.id}">▶ 이 아이로 플레이</button>` : ''}
@@ -5811,6 +6130,146 @@ PQ.Parent = (function () {
     }).join('');
     return h + '</div>';
   }
+  /* ---------- 🛍️ 상점 관리: 미리보기 · 가격 · 숨김 · 순서 ---------- */
+  let shopType = 'avatar';
+  const TYPE_DESC = { avatar: '아이의 프로필 사진이 돼요', theme: '행성 뒤 우주 배경 색이 바뀌어요', pet: '우주 펫이 착용해요 (펫이 부화한 뒤 보여요)', ship: '행성 주위를 날아다니는 친구예요', fx: '행성 주위에 특수 효과가 생겨요' };
+  const themeBg = x => `linear-gradient(160deg, ${(x.colors || ['#060a1f', '#1b1f5c']).join(', ')})`;
+  function pv(x) {
+    if (x.type === 'theme') return `<span class="pv theme" style="background:${themeBg(x)}" data-pact="shopPreview" data-id="${x.id}" title="크게 보기"></span>`;
+    if (x.type === 'avatar') return `<span class="pv pv-av" data-pact="shopPreview" data-id="${x.id}" title="크게 보기"><span class="avatar av" data-frame="${x.frame || ''}">${x.icon}</span></span>`;
+    return `<span class="pv" data-pact="shopPreview" data-id="${x.id}" title="크게 보기">${x.icon}</span>`;
+  }
+  function shopItem(id) { return PQ.COSMETICS.find(x => x.id === id) || PQ.ITEMS.find(x => x.id === id); }
+  function shopPreview(x) {
+    const s = st(), cost = E.shopCost(s, x.id), type = x.type || 'item';
+    const big = type === 'theme' ? `<div class="pv-big" style="background:${themeBg(x)}"><span class="pv-planet"></span></div>`
+      : type === 'avatar' ? `<div style="padding:22px 0 12px"><span class="avatar av pv-avbig" data-frame="${x.frame || ''}">${x.icon}</span></div>`
+        : `<div class="big-emoji">${x.icon}</div>`;
+    U.modal(`${big}<h2>${esc(x.name)}</h2>${x.r ? `<span class="rarity r${x.r}">${PQ.RARITY[x.r]}${x.frame ? ' · ' + { silver: '은빛 테두리', gold: '황금 테두리', neon: '네온 테두리', rainbow: '무지개 테두리', cosmic: '우주 테두리' }[x.frame] : ''}</span>` : ''}
+      <p>${esc(type === 'item' ? x.desc : TYPE_DESC[type])}</p><p class="muted">기본 가격 🪙${x.cost} · 지금 가격 <b style="color:var(--gold)">🪙${cost}</b>${E.shopHidden(s, x.id) ? ' · 상점에서 숨김' : ''}</p>
+      <div class="actions"><button class="btn" data-m="ok">닫기</button></div>`);
+  }
+  function rShop(s) {
+    const list = E.shopList(s, shopType);
+    const changed = list.filter(x => E.shopCost(s, x.id) !== x.cost).length, hidden = list.filter(x => E.shopHidden(s, x.id)).length;
+    let h = `<div class="card muted" style="margin-bottom:8px">🛍️ 아이의 <b style="color:#fff">우주 상점</b>을 관리해요. <b style="color:#fff">가격</b>을 고치면 바로 반영되고, <b style="color:#fff">스위치를 끄면</b> 상점에서 숨겨요(이미 산 것은 계속 쓸 수 있어요). 그림을 누르면 <b style="color:#fff">크게 미리보기</b>.<br>💡 기준: 🪙150 = 게임 30분 · 필수 루틴 한 주 ≈ 🪙1,200</div>`;
+    h += `<div class="chips wrap">${PQ.SHOP_TYPES.map(([k, l]) => `<button class="fchip ${shopType === k ? 'on' : ''}" data-pact="shopType" data-t="${k}">${l}</button>`).join('')}</div>`;
+    h += `<div class="row" style="margin:10px 0 6px"><span class="muted grow">${list.length}개${changed ? ` · 가격 바꿈 ${changed}` : ''}${hidden ? ` · 숨김 ${hidden}` : ''}</span>
+      <button class="btn small ghost" data-pact="shopResetPrice">↺ 가격 기본값</button><button class="btn small ghost" data-pact="shopResetOrder">↺ 순서 기본값</button></div>${SORT_TIP}`;
+    h += `<div class="plist" data-sortlist="shop:${shopType}">` + list.map(x => {
+      const cost = E.shopCost(s, x.id), hid = E.shopHidden(s, x.id);
+      return `<div class="pitem ${hid ? 'off' : ''}" data-sid="${x.id}">${HANDLE}${pv(x)}<div class="info"><b>${esc(x.name)}</b><small>${x.r ? `<span class="rarity r${x.r}">${PQ.RARITY[x.r]}</span> ` : ''}<span data-base="${x.id}">${cost !== x.cost ? `기본 🪙${x.cost} → <b style="color:var(--gold)">🪙${cost}</b>` : `기본 🪙${x.cost}`}</span>${hid ? ' · 숨김' : ''}</small></div>
+        <label class="price-wrap" title="가격">🪙<input type="number" class="price-in" inputmode="numeric" min="0" max="100000" step="10" value="${cost}" data-price="${x.id}"></label>
+        <label class="switch" title="상점에 보이기"><input type="checkbox" data-ptoggle="shopShow" data-id="${x.id}" ${hid ? '' : 'checked'}><i></i></label></div>`;
+    }).join('') + '</div>';
+    return h;
+  }
+
+  /* ---------- 길게 눌러 순서 바꾸기 (아이패드 터치 · PC 마우스) ---------- */
+  function reorderArr(arr, ids) {
+    const m = new Map(arr.map(x => [x.id, x])), out = ids.map(id => m.get(id)).filter(Boolean);
+    arr.forEach(x => { if (out.indexOf(x) < 0) out.push(x); });
+    arr.splice(0, arr.length, ...out);
+  }
+  function applyOrder(key, ids) {
+    const s = st(), [kind, sub] = key.split(':');
+    if (kind === 'mission') {
+      const pos = [];
+      s.missions.forEach((m, i) => { if (m.cat === sub && m.type !== 'surprise') pos.push(i); });
+      const byId = new Map(s.missions.map(m => [m.id, m])), ordered = ids.map(id => byId.get(id)).filter(m => m && m.cat === sub && m.type !== 'surprise');
+      if (ordered.length !== pos.length) return;
+      pos.forEach((p, k) => { s.missions[p] = ordered[k]; });
+    } else if (kind === 'reward') reorderArr(s.rewards, ids);
+    else if (kind === 'kid') reorderArr(s.children, ids);
+    else if (kind === 'shop') E.setShopOrder(s, sub, ids);
+    else return;
+    U.commit();
+  }
+  function bindSort(root) {
+    const body = $('#pBody');
+    let press = null, drag = null, suppressUntil = 0, raf = 0;
+    const NOSTART = 'button, input, select, textarea, label, a';
+    const begin = (e, x, y, mouse) => {
+      const it = e.target.closest('[data-sid]'), list = it && it.closest('[data-sortlist]');
+      if (!it || !list || drag) return;
+      const handle = !!e.target.closest('.drag-handle');
+      if (!handle && e.target.closest(NOSTART)) return;
+      cancelPress();
+      press = { it, list, x, y, timer: setTimeout(() => lift(), mouse && handle ? 0 : 420) };
+      it.classList.add('press-hint');
+    };
+    function cancelPress() { if (press) { clearTimeout(press.timer); press.it.classList.remove('press-hint'); press = null; } }
+    function lift() {
+      if (!press) return;
+      const { it, list, y } = press;
+      press = null;
+      it.classList.remove('press-hint');
+      const items = Array.from(list.children).filter(x => x.hasAttribute('data-sid'));
+      if (items.length < 2) return;
+      const rects = items.map(x => x.getBoundingClientRect()), from = items.indexOf(it);
+      const gap = rects.length > 1 ? Math.max(0, (from < rects.length - 1 ? rects[from + 1].top - rects[from].bottom : rects[from].top - rects[from - 1].bottom)) : 8;
+      drag = { it, list, items, rects, from, to: from, y0: y, y, sc0: body.scrollTop, h: rects[from].height + gap };
+      list.classList.add('sorting'); it.classList.add('lifted');
+      U.vibrate && U.vibrate(15); A.play('tap');
+      const step = () => {
+        if (!drag) return;
+        const br = body.getBoundingClientRect(), edge = 70;
+        let v = 0;
+        if (drag.y < br.top + edge) v = -Math.ceil((br.top + edge - drag.y) / 6);
+        else if (drag.y > br.bottom - edge) v = Math.ceil((drag.y - (br.bottom - edge)) / 6);
+        if (v) { body.scrollTop += v; move(drag.y); }
+        raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+      move(y);
+    }
+    function move(y) {
+      const d = drag; d.y = y;
+      const dy = (y - d.y0) + (body.scrollTop - d.sc0);
+      d.it.style.transform = `translateY(${dy}px) scale(1.03)`;
+      const r = d.rects[d.from], cy = r.top + r.height / 2 + dy;
+      let to = 0;
+      d.rects.forEach((q, i) => { if (i !== d.from && q.top + q.height / 2 < cy) to++; });
+      d.to = to;
+      d.items.forEach((x, i) => {
+        if (i === d.from) return;
+        const sh = d.from < to && i > d.from && i <= to ? -d.h : to < d.from && i >= to && i < d.from ? d.h : 0;
+        x.style.transform = sh ? `translateY(${sh}px)` : '';
+      });
+    }
+    function drop(cancel) {
+      const d = drag; drag = null;
+      cancelAnimationFrame(raf);
+      d.items.forEach(x => { x.style.transform = ''; });
+      d.list.classList.remove('sorting'); d.it.classList.remove('lifted');
+      suppressUntil = Date.now() + 450;
+      if (cancel || d.to === d.from) return;
+      const ids = d.items.map(x => x.dataset.sid), [moved] = ids.splice(d.from, 1);
+      ids.splice(d.to, 0, moved);
+      A.play('done');
+      applyOrder(d.list.dataset.sortlist, ids);
+    }
+    /* 마우스 */
+    root.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && e.button === 0) begin(e, e.clientX, e.clientY, true); });
+    window.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      if (drag) move(e.clientY);
+      else if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 6) cancelPress();
+    });
+    window.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') return; if (drag) drop(false); else cancelPress(); });
+    /* 터치: 길게 누르는 동안 손가락이 움직이면 스크롤로 보고 취소, 들어 올린 뒤에는 화면이 스크롤되지 않게 막아요 */
+    root.addEventListener('touchstart', e => { if (e.touches.length === 1) begin(e, e.touches[0].clientX, e.touches[0].clientY, false); else { cancelPress(); if (drag) drop(true); } }, { passive: true });
+    root.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      if (drag) { e.preventDefault(); move(t.clientY); }
+      else if (press && Math.hypot(t.clientX - press.x, t.clientY - press.y) > 8) cancelPress();
+    }, { passive: false });
+    root.addEventListener('touchend', () => { if (drag) drop(false); else cancelPress(); });
+    root.addEventListener('touchcancel', () => { if (drag) drop(true); else cancelPress(); });
+    root.addEventListener('contextmenu', e => { if (press || drag || e.target.closest('[data-sid]')) e.preventDefault(); });
+    root.addEventListener('click', e => { if (Date.now() < suppressUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+  }
+
   function rReport(s) {
     if (!reportChild || !E.getChild(s, reportChild)) reportChild = s.activeChildId;
     const c = E.getChild(s, reportChild);
@@ -5867,7 +6326,7 @@ PQ.Parent = (function () {
       <label>돌발 미션 기본 배율</label>${sel('surMult', [[1.2, '×1.2'], [1.5, '×1.5'], [2, '×2'], [3, '×3']], set.surpriseMult)}
       <label class="switch">🌈 콤보 보너스 (여러 분야를 하면 추가 경험치)<input type="checkbox" id="combos" ${set.combos ? 'checked' : ''}><i></i></label>
       <label class="switch">🔊 효과음<input type="checkbox" id="sound" ${set.sound ? 'checked' : ''}><i></i></label>
-      <label class="switch">🎵 배경음악 (게임을 열 때 · 진화할 때 1분, 단계마다 다른 곡)<input type="checkbox" id="music" ${set.music !== false ? 'checked' : ''}><i></i></label></div>
+      <label class="switch">🎵 배경음악 (첫 터치부터 계속 반복 · 진화하면 새 단계의 곡으로, 아이가 🎵 버튼으로 끌 수 있어요)<input type="checkbox" id="music" ${set.music !== false ? 'checked' : ''}><i></i></label></div>
       <button class="btn block" data-pact="saveSettings">💾 설정 저장</button>
       <div class="card" style="margin-top:14px"><b>🔐 보안</b><div class="row" style="margin-top:10px"><button class="btn small ghost" data-pact="changePin">PIN 변경</button><span class="muted">힌트: ${esc(s.parent.hint || '없음')}</span></div>
         ${Array.isArray(s.parent.resetLog) && s.parent.resetLog.length ? `<p style="margin:8px 0 0;color:#ffab91">⚠️ '잊음'으로 PIN을 새로 만든 기록: ${s.parent.resetLog.map(t => U.fmtTime(t)).join(', ')} — 부모님이 한 게 아니라면 PIN을 바꿔 주세요.</p>` : ''}
@@ -6228,7 +6687,7 @@ PQ.Parent = (function () {
       case 'newReward': editReward(null); return;
       case 'editReward': editReward(s.rewards.find(r => r.id === id)); return;
       case 'addKid': { const info = await U.childForm('아이 추가', '', PQ.AVATARS[1], true); if (info) { E.addChild(s, info.name, info.avatar); U.commit(); } return; }
-      case 'editKid': { const c = E.getChild(s, id); const info = await U.childForm('아이 정보 수정', c.name, c.avatar, true); if (info) { c.name = info.name; c.avatar = info.avatar; U.commit(); } return; }
+      case 'editKid': { const c = E.getChild(s, id); const info = await U.childForm('아이 정보 수정', c.name, c.avatar, true, c); if (info) { c.name = info.name; E.setAvatar(s, c.id, info.avatar, info.avatarId); U.commit(); } return; }
       case 'playKid': s.activeChildId = id; U.commit(); U.toast('▶', `${esc(E.getChild(s, id).name)}의 행성으로 바꿨어요`); return;
       case 'delKid': { const c = E.getChild(s, id); if (await U.confirmBox('아이 삭제', `${esc(c.name)}의 모든 기록이 지워져요. 정말 삭제할까요?`, '삭제', true)) { E.removeChild(s, id); U.commit(); } return; }
       case 'bonus': bonusModal(E.getChild(s, id)); return;
@@ -6238,6 +6697,14 @@ PQ.Parent = (function () {
       case 'penalty': penaltyModal(E.getChild(s, id)); return;
       case 'delReward': { const r = s.rewards.find(x => x.id === id); if (r && await U.confirmBox('선물 삭제', `"${esc(r.title)}"을(를) 상점에서 삭제할까요?`, '삭제', true)) { s.rewards = s.rewards.filter(x => x.id !== id); U.commit(); } return; }
       case 'repKid': reportChild = id; render(); return;
+      case 'shopType': shopType = el.dataset.t; A.play('tap'); render(); return;
+      case 'shopPreview': { const x = shopItem(id); if (x) { A.play('tap'); shopPreview(x); } return; }
+      case 'shopResetPrice': {
+        const ids = E.shopList(s, shopType).map(x => x.id);
+        if (await U.confirmBox('가격 되돌리기', '이 종류의 가격을 모두 기본값으로 되돌릴까요?', '되돌리기', false)) { ids.forEach(i => { delete s.shop.price[i]; }); U.commit(); }
+        return;
+      }
+      case 'shopResetOrder': delete s.shop.order[shopType]; A.play('tap'); U.commit(); return;
       case 'revoke': if (await U.confirmBox('기록 취소', '이 기록의 경험치·코인을 되돌릴까요?', '되돌리기', true)) { E.revoke(s, id); U.commit(); } return;
       case 'saveSettings': saveSettings(); return;
       case 'changePin': if (await setupPin(false)) render(); return;
@@ -6304,11 +6771,29 @@ PQ.Parent = (function () {
 
   function bind() {
     const root = $('#parent');
+    bindSort(root);
     root.addEventListener('click', e => { const el = e.target.closest('[data-pact]'); if (el) act(el.dataset.pact, el); });
     root.addEventListener('change', e => {
       const t = e.target;
       if (t.dataset.ptoggle === 'mission') { const m = st().missions.find(x => x.id === t.dataset.id); if (m) { m.active = t.checked; U.commit(); } }
       if (t.dataset.ptoggle === 'reward') { const r = st().rewards.find(x => x.id === t.dataset.id); if (r) { r.active = t.checked; U.commit(); } }
+      /* 상점 가격·숨김: 다른 칸을 고치는 중일 수 있어서 화면 전체를 다시 그리지 않고 그 줄만 바꿔요 */
+      if (t.dataset.ptoggle === 'shopShow') {
+        const s = st(), id = t.dataset.id;
+        if (t.checked) delete s.shop.hidden[id]; else s.shop.hidden[id] = true;
+        const row = t.closest('[data-sid]'); if (row) row.classList.toggle('off', !t.checked);
+        U.save();
+      }
+      if (t.dataset.price) {
+        const s = st(), id = t.dataset.price, x = shopItem(id);
+        if (t.value === '' || !E.setShopPrice(s, id, t.value)) { t.value = E.shopCost(s, id); return; }
+        const cost = E.shopCost(s, id);
+        t.value = cost;
+        const lbl = $(`[data-base="${id}"]`, root);
+        if (lbl && x) lbl.innerHTML = cost !== x.cost ? `기본 🪙${x.cost} → <b style="color:var(--gold)">🪙${cost}</b>` : `기본 🪙${x.cost}`;
+        U.save();
+        U.toast('🪙', `<b>${esc(x ? x.name : '')}</b><small>가격을 🪙${cost}(으)로 바꿨어요</small>`);
+      }
       if (t.id === 'importFile' && t.files && t.files[0]) { const fr = new FileReader(); fr.onload = () => doImport(String(fr.result)); fr.readAsText(t.files[0]); t.value = ''; }
     });
   }
@@ -6363,7 +6848,15 @@ PQ.Main = (function () {
     const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { PQ.Render.resize(); PQ.UI.refresh(); }, 120); };
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
-    const loop = t => { if (!document.hidden) PQ.Render.frame(t); requestAnimationFrame(loop); };
+    /* 매 프레임 그대로 그려요(화면 주사율 그대로). 단, 화면에 전혀 안 보일 때만 쉬어요:
+       앱이 백그라운드일 때 · 부모님 모드가 화면 전체를 완전히 덮은 뒤(열리는 페이드 0.25초가 끝난 다음) */
+    let parentSince = 0;
+    const loop = t => {
+      requestAnimationFrame(loop);
+      if (document.hidden) return;
+      if (PQ.Parent.isOpen()) { if (!parentSince) parentSince = t; if (t - parentSince > 400) return; } else parentSince = 0;
+      PQ.Render.frame(t);
+    };
     requestAnimationFrame(loop);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { PQ.UI.refresh(); PQ.UI.drainEvents(); PQ.UI.checkSurprises(); } });
     /* 다른 탭에서 바뀐 기록: 부모님 모드나 창이 열려 있으면 닫힌 뒤에 반영 (그 사이 이 탭에서 저장하면 이 탭 내용이 우선) */
